@@ -1,5 +1,5 @@
 <div class = "well">
-   <%= form_for @editor, html: { multipart: true } do |f| %>
+   <%= form_for @editor, url: check_valid_path, tml: { multipart: true } do |f| %>
       <%= f.label :cfgfile %>
       <%= f.file_field :cfgfile %>
        <%= f.hidden_field :cfgfile_cache %>

@@ -1,3 +1,5 @@
+require 'open3'
+
 class EditorsController < ApplicationController
   before_action :set_editor, only: [:show, :edit, :update, :destroy]
 
@@ -8,7 +10,13 @@ class EditorsController < ApplicationController
   end
 
   def check_validate
-    # puts 
+    uploader = CfgvalidatorUploader.new
+    uploader.store!(params[:editor][:cfgfile])
+    cmd = "cfn_nag \"#{Rails.root}/public/uploads/#{params[:editor][:cfgfile].original_filename}\""
+    Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+      puts "stdout is: " + stdout.read
+      puts "stderr is: " + stderr.read
+    end
   end
 
   # GET /editors/1
@@ -29,17 +37,10 @@ class EditorsController < ApplicationController
   # POST /editors
   # POST /editors.json
   def create
-
-    uploader = CfgvalidatorUploader.new
-    uploader.store!(params[:editor][:cfgfile].read)
-    puts "---+++#{uploader.store!}"
-    puts "0000---#{uploader.retrieve_from_store!('my_file.png')}"
-
     @editor = Editor.new(editor_params)
 
     respond_to do |format|
       if @editor.save
-        # puts "******#{@editor.cfgfile.current_path}"
         format.html { redirect_to @editor, notice: 'Editor was successfully created.' }
         format.json { render :show, status: :created, location: @editor }
       else
@@ -81,6 +82,6 @@ class EditorsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def editor_params
-      params.require(:editor).permit(cfgfile:[])
+      params.require(:editor).permit(:cfgfile)
     end
 end
